@@ -27,7 +27,6 @@ func homePage(w http.ResponseWriter, r *http.Request){
 }
 
 func returnAllArticles(w http.ResponseWriter, r *http.Request){
-	fmt.Println("Endpoint Hit: returnAllArticles")
   	params := mux.Vars(r)
     	table := params["table"]
 	fmt.Println("table: %s",table)
@@ -45,27 +44,34 @@ func returnAllArticles(w http.ResponseWriter, r *http.Request){
         fmt.Println("succesfully connected to mysql", err)
 
 
-	rows, err := db.Query(`SELECT firstName, secondName FROM person`)
-        if err != nil {
-                panic(err)
-        }
-        defer rows.Close()
-	persons := []Person{}
-	for rows.Next() {
-                person := Person{}
-                err = rows.Scan(&person.FirstName, &person.SecondName)
-                if err != nil {
-                        panic(err)
-                }
-                fmt.Println(person)
-		persons = append(persons, person)
-        }
-        err = rows.Err()
-        if err != nil {
-                panic(err)
-        }
+	rows, err := db.Query(`SELECT * FROM ` + table)
 
-	json.NewEncoder(w).Encode(persons)
+    defer rows.Close()
+    var rowBuf, _ = rows.Columns()
+    var cols = make([]string, len(rowBuf))
+    copy(cols, rowBuf)
+    fmt.Println(rowBuf)
+    var vals = make([]interface{}, len(rowBuf))
+    for i, _ := range rowBuf {
+        vals[i] = &rowBuf[i]
+    }
+    for rows.Next() {
+        err := rows.Scan(vals...)
+        if err != nil {
+            log.Fatal(err)
+        }
+        var m = map[string]interface{}{}
+        for i, col := range cols {
+            m[col] = vals[i]
+        }
+        obj, _ := json.Marshal(m)
+        //
+        fmt.Fprintf(w, string(obj))
+    }
+    err = rows.Err()
+    if err != nil {
+        log.Fatal(err)
+    }
 }
 
 func Middleware(next http.Handler) http.Handler {
