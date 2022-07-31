@@ -91,7 +91,7 @@ func read(w http.ResponseWriter, r *http.Request) {
 	var query = `SELECT * FROM ` + table
 
 	rows, err := db.Query(query)
-	if err := r.ParseForm(); err != nil {
+	if err != nil {
 		panic("error with the query '" + query + "': " + err.Error())
 	}
 
