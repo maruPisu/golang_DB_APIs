@@ -41,7 +41,7 @@ func homePage(w http.ResponseWriter, r *http.Request) {
 }
 
 func connect() {
-	db, err := sql.Open("mysql", configuration.DB_USERNAME+":"+configuration.DB_PASSWORD+"@tcp(127.0.0.1:3306)/test")
+	db, err := sql.Open("mysql", configuration.DB_USERNAME+":"+configuration.DB_PASSWORD+"@tcp(127.0.0.1:3306)/" + configuration.DB_NAME)
 	defer db.Close()
 	if err != nil {
 		panic("error connectiong to mysql " + err.Error()) // Just for example purpose. You should use proper error handling instead of panic
@@ -51,7 +51,7 @@ func connect() {
 	if err != nil {
 		panic("error pinging server " + err.Error()) // Just for example purpose. You should use proper error handling instead of panic
 	}
-	fmt.Println("succesfully connected to mysql", err)
+	fmt.Println("succesfully connected to mysql")
 }
 
 func generateAllergenQuery(r *http.Request) string {
