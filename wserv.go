@@ -40,10 +40,7 @@ func homePage(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("Endpoint Hit: homePage")
 }
 
-func read(w http.ResponseWriter, r *http.Request) {
-	params := mux.Vars(r)
-	table := params["table"]
-	fmt.Println("table: %s", table)
+func connect() {
 	db, err := sql.Open("mysql", configuration.DB_USERNAME+":"+configuration.DB_PASSWORD+"@tcp(127.0.0.1:3306)/test")
 	defer db.Close()
 	if err != nil {
@@ -54,8 +51,41 @@ func read(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		panic(err.Error()) // Just for example purpose. You should use proper error handling instead of panic
 	}
-
 	fmt.Println("succesfully connected to mysql", err)
+}
+
+func generateAllergenQuery(r *http.Request) string {
+	name := r.FormValue("name")
+	description := r.FormValue("description")
+
+	fmt.Println("Endpoint Hit: generate allergen " + name + ", " + description)
+
+	return "generateAllergenQuery"
+}
+
+func create(w http.ResponseWriter, r *http.Request) {
+	params := mux.Vars(r)
+	table := params["table_name"]
+	fmt.Println("table: %s", table)
+	var query string
+	if err := r.ParseForm(); err != nil {
+		fmt.Fprintf(w, "ParseForm() err: %v", err)
+		return
+	}
+
+	switch {
+	case table == "allergen":
+		query = generateAllergenQuery(r)
+	}
+
+	fmt.Println("query " + query)
+}
+
+func read(w http.ResponseWriter, r *http.Request) {
+
+	params := mux.Vars(r)
+	table := params["table_name"]
+	fmt.Println("table: %s", table)
 
 	rows, err := db.Query(`SELECT * FROM ` + table)
 
@@ -112,12 +142,14 @@ func handleRequests() {
 	router := mux.NewRouter().StrictSlash(true)
 	router.Use(Middleware)
 	router.HandleFunc("/", homePage)
-	router.HandleFunc("/table/{table:[a-z]+}", read)
+	router.HandleFunc("/table/{table_name:[a-z]+}", create).Methods("POST")
+	router.HandleFunc("/table/{table_name:[a-z]+}", read)
 	log.Fatal(http.ListenAndServe(":10000", router))
 
 }
 
 func main() {
 	configuration = GetConfiguration()
+	connect()
 	handleRequests()
 }
