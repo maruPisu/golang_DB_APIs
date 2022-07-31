@@ -43,7 +43,6 @@ func homePage(w http.ResponseWriter, r *http.Request) {
 func connect() {
 	db, err := sql.Open("mysql", configuration.DB_USERNAME+":"+configuration.DB_PASSWORD+
 		"@tcp(127.0.0.1:"+configuration.DB_PORT+")/"+configuration.DB_NAME)
-	defer db.Close()
 	if err != nil {
 		panic("error connectiong to mysql " + err.Error())
 	}
@@ -89,11 +88,13 @@ func read(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("read table: ", table)
 
 	var query = `SELECT * FROM ` + table
+	fmt.Println("query: ", query)
 
 	rows, err := db.Query(query)
 	if err != nil {
 		panic("error with the query '" + query + "': " + err.Error())
 	}
+	fmt.Println("ok: ", query)
 
 	defer rows.Close()
 	var rowBuf, _ = rows.Columns()
@@ -156,6 +157,7 @@ func handleRequests() {
 
 func main() {
 	configuration = GetConfiguration()
+	defer db.Close()
 	connect()
 	handleRequests()
 }
