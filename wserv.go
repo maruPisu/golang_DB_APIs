@@ -44,12 +44,12 @@ func connect() {
 	db, err := sql.Open("mysql", configuration.DB_USERNAME+":"+configuration.DB_PASSWORD+"@tcp(127.0.0.1:3306)/test")
 	defer db.Close()
 	if err != nil {
-		panic(err.Error()) // Just for example purpose. You should use proper error handling instead of panic
+		panic("error connectiong to mysql " + err.Error()) // Just for example purpose. You should use proper error handling instead of panic
 	}
 
 	err = db.Ping()
 	if err != nil {
-		panic(err.Error()) // Just for example purpose. You should use proper error handling instead of panic
+		panic("error pinging server " + err.Error()) // Just for example purpose. You should use proper error handling instead of panic
 	}
 	fmt.Println("succesfully connected to mysql", err)
 }
