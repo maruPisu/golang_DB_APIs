@@ -66,7 +66,7 @@ func generateAllergenQuery(r *http.Request) string {
 func create(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	table := params["table_name"]
-	fmt.Println("table: %s", table)
+	fmt.Println("create table: ", table)
 	var query string
 	if err := r.ParseForm(); err != nil {
 		fmt.Fprintf(w, "ParseForm() err: %v", err)
@@ -85,7 +85,7 @@ func read(w http.ResponseWriter, r *http.Request) {
 
 	params := mux.Vars(r)
 	table := params["table_name"]
-	fmt.Println("table: %s", table)
+	fmt.Println("read table: ", table)
 
 	rows, err := db.Query(`SELECT * FROM ` + table)
 
