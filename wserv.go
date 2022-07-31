@@ -45,12 +45,12 @@ func connect() {
 		"@tcp(127.0.0.1:"+configuration.DB_PORT+")/"+configuration.DB_NAME)
 	defer db.Close()
 	if err != nil {
-		panic("error connectiong to mysql " + err.Error()) // Just for example purpose. You should use proper error handling instead of panic
+		panic("error connectiong to mysql " + err.Error())
 	}
 
 	err = db.Ping()
 	if err != nil {
-		panic("error pinging server " + err.Error()) // Just for example purpose. You should use proper error handling instead of panic
+		panic("error pinging server " + err.Error())
 	}
 	fmt.Println("succesfully connected to mysql")
 }
@@ -88,7 +88,12 @@ func read(w http.ResponseWriter, r *http.Request) {
 	table := params["table_name"]
 	fmt.Println("read table: ", table)
 
-	rows, err := db.Query(`SELECT * FROM ` + table)
+	var query = `SELECT * FROM ` + table
+
+	rows, err := db.Query(query)
+	if err := r.ParseForm(); err != nil {
+		panic("error with the query '" + query + "': " + err.Error())
+	}
 
 	defer rows.Close()
 	var rowBuf, _ = rows.Columns()
