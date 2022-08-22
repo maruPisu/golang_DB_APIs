@@ -41,7 +41,7 @@ func homePage(w http.ResponseWriter, r *http.Request) {
 }
 
 func connect() {
-	db, err := sql.Open("mysql", configuration.DB_USERNAME+":"+configuration.DB_PASSWORD+
+	db, err = sql.Open("mysql", configuration.DB_USERNAME+":"+configuration.DB_PASSWORD+
 		"@tcp(127.0.0.1:"+configuration.DB_PORT+")/"+configuration.DB_NAME)
 	if err != nil {
 		panic("error connectiong to mysql " + err.Error())
@@ -157,7 +157,7 @@ func handleRequests() {
 
 func main() {
 	configuration = GetConfiguration()
-	defer db.Close()
 	connect()
+	defer db.Close()
 	handleRequests()
 }
