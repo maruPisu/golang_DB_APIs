@@ -98,7 +98,8 @@ func read(w http.ResponseWriter, r *http.Request) {
 
 	rows, err := db.Query(query)
 	if err != nil {
-		panic("error with the query '" + query + "': " + err.Error())
+		w.WriteHeader(http.StatusBadRequest)
+		//panic("error with the query '" + query + "': " + err.Error())
 	}
 	fmt.Println("ok: ", query)
 
