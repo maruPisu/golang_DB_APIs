@@ -90,7 +90,7 @@ func read(w http.ResponseWriter, r *http.Request) {
 	extra := ""
 
 	if item_id != "" {
-		extra = "where id = " + item_id
+		extra = " where id = " + item_id
 	}
 
 	var query = `SELECT * FROM ` + table + extra
@@ -156,8 +156,8 @@ func handleRequests() {
 	router.Use(Middleware)
 	router.HandleFunc("/", homePage)
 	router.HandleFunc("/table/{table_name:[a-z]+}", create).Methods("POST")
-	//	router.HandleFunc("/table/{table_name:[a-z]+}", read)
 	router.HandleFunc("/table/{table_name:[a-z]+}/{item_id:[0-9]+}", read)
+	router.HandleFunc("/table/{table_name:[a-z]+}", read)
 	log.Fatal(http.ListenAndServe(":10000", router))
 
 }
