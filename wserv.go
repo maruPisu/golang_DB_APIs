@@ -85,9 +85,15 @@ func read(w http.ResponseWriter, r *http.Request) {
 
 	params := mux.Vars(r)
 	table := params["table_name"]
+	item_id := params["item_id"]
 	fmt.Println("read table: ", table)
+	extra := ""
 
-	var query = `SELECT * FROM ` + table
+	if item_id != "" {
+		extra = "where id = " + item_id
+	}
+
+	var query = `SELECT * FROM ` + table + extra
 	fmt.Println("query: ", query)
 
 	rows, err := db.Query(query)
@@ -150,7 +156,8 @@ func handleRequests() {
 	router.Use(Middleware)
 	router.HandleFunc("/", homePage)
 	router.HandleFunc("/table/{table_name:[a-z]+}", create).Methods("POST")
-	router.HandleFunc("/table/{table_name:[a-z]+}", read)
+	//	router.HandleFunc("/table/{table_name:[a-z]+}", read)
+	router.HandleFunc("/table/{table_name:[a-z]+}/{item_id:[0-9]+}", read)
 	log.Fatal(http.ListenAndServe(":10000", router))
 
 }
