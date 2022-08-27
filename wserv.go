@@ -9,6 +9,7 @@ import (
 	"github.com/tkanos/gonfig"
 	"log"
 	"net/http"
+	"time"
 )
 
 type Person struct {
@@ -26,6 +27,13 @@ type Config struct {
 	DB_PORT     string
 	DB_HOST     string
 	DB_NAME     string
+}
+
+type RegisteredSymptom struct {
+	user    int       `json:"user"`
+	symptom int       `json:"symptom"`
+	date    time.Time `json:"date"`
+	time    time.Time `json:"time"`
 }
 
 func GetConfiguration() Config {
@@ -54,13 +62,20 @@ func connect() {
 	fmt.Println("succesfully connected to mysql")
 }
 
-func generateAllergenQuery(r *http.Request) string {
-	name := r.FormValue("name")
-	description := r.FormValue("description")
+func generateRegisteredSymptomQuery(w http.ResponseWriter, r *http.Request) string {
+	decoder := json.NewDecoder(r.Body)
+	var registeredSymptom RegisteredSymptom
+	err := decoder.Decode(&registeredSymptom)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte("400 - error with the json! " + err.Error()))
+		return ""
+	}
+	query := fmt.Sprintf("INSERT INTO registered_symptom (user, symptom, date, time) VALUES (%d, %d, %d, %d)", registeredSymptom.user, registeredSymptom.symptom, registeredSymptom.date, registeredSymptom.time)
 
-	fmt.Println("Endpoint Hit: generate allergen " + name + ", " + description)
+	fmt.Println("Endpoint Hit: generate registered symptom " + query)
 
-	return "generateAllergenQuery"
+	return query
 }
 
 func create(w http.ResponseWriter, r *http.Request) {
@@ -74,8 +89,8 @@ func create(w http.ResponseWriter, r *http.Request) {
 	}
 
 	switch {
-	case table == "allergen":
-		query = generateAllergenQuery(r)
+	case table == "registered_symptom":
+		query = generateRegisteredSymptomQuery(w, r)
 	}
 
 	fmt.Println("query " + query)
@@ -99,7 +114,7 @@ func read(w http.ResponseWriter, r *http.Request) {
 	rows, err := db.Query(query)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte("400 - error with the query!"))
+		w.Write([]byte("400 - error with the query! " + err.Error()))
 		return
 		//panic("error with the query '" + query + "': " + err.Error())
 	}
