@@ -31,8 +31,8 @@ type Config struct {
 }
 
 type RegisteredSymptom struct {
-	User     int       `json:"user"`
-	Symptom  int       `json:"symptom"`
+	User     string    `json:"user"`
+	Symptom  string    `json:"symptom"`
 	Datetime time.Time `json:"datetime"`
 }
 
@@ -62,13 +62,11 @@ func connect() {
 	fmt.Println("succesfully connected to mysql")
 }
 
-func generateRegisteredSymptomQuery(w http.ResponseWriter, r *http.Request) string {
-	//decoder := json.NewDecoder(r.Body)
+func generateRegisteredSymptomQuery(w http.ResponseWriter, r *http.Request) {
 	body, errRead := ioutil.ReadAll(r.Body)
 	if errRead != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		w.Write([]byte("400 - error with the json! " + err.Error()))
-		return ""
 	}
 	fmt.Println("body: " + string(body))
 	registeredSymptom := RegisteredSymptom{}
@@ -76,23 +74,16 @@ func generateRegisteredSymptomQuery(w http.ResponseWriter, r *http.Request) stri
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		w.Write([]byte("400 - error with the json! " + err.Error()))
-		return ""
 	}
 	query, _ := db.Prepare("INSERT INTO registered_symptom (user, symptom, datetime) VALUES (?, ?, ?)")
 
 	query.Exec(registeredSymptom.User, registeredSymptom.Symptom, registeredSymptom.Datetime.UTC())
-
-	//fmt.Println("Endpoint Hit: generate registered symptom " + query)
-	//fmt.Fprintf(w, "{\"result\":\"ok\"}")
-
-	return ""//query
 }
 
 func create(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	table := params["table_name"]
 	fmt.Println("create table: ", table)
-	var query string
 	if err := r.ParseForm(); err != nil {
 		fmt.Fprintf(w, "ParseForm() err: %v", err)
 		return
@@ -100,10 +91,8 @@ func create(w http.ResponseWriter, r *http.Request) {
 
 	switch {
 	case table == "registered_symptom":
-		query = generateRegisteredSymptomQuery(w, r)
+		generateRegisteredSymptomQuery(w, r)
 	}
-
-	fmt.Println("query " + query)
 }
 
 func read(w http.ResponseWriter, r *http.Request) {
