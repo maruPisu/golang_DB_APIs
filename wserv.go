@@ -7,6 +7,7 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/gorilla/mux"
 	"github.com/tkanos/gonfig"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"time"
@@ -63,9 +64,15 @@ func connect() {
 }
 
 func generateRegisteredSymptomQuery(w http.ResponseWriter, r *http.Request) string {
-	decoder := json.NewDecoder(r.Body)
+	//decoder := json.NewDecoder(r.Body)
+	body, errRead := ioutil.ReadAll(r.Body)
+	if errRead != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte("400 - error with the json! " + err.Error()))
+		return ""
+	}
 	var registeredSymptom RegisteredSymptom
-	err := decoder.Decode(&registeredSymptom)
+	err := json.Unmarshal(body, &registeredSymptom)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		w.Write([]byte("400 - error with the json! " + err.Error()))
