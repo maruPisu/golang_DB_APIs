@@ -31,10 +31,9 @@ type Config struct {
 }
 
 type RegisteredSymptom struct {
-	user    int       `json:"user"`
-	symptom int       `json:"symptom"`
-	date    time.Time `json:"date"`
-	time    time.Time `json:"time"`
+	User     int       `json:"user"`
+	Symptom  int       `json:"symptom"`
+	Datetime time.Time `json:"datetime"`
 }
 
 func GetConfiguration() Config {
@@ -71,19 +70,22 @@ func generateRegisteredSymptomQuery(w http.ResponseWriter, r *http.Request) stri
 		w.Write([]byte("400 - error with the json! " + err.Error()))
 		return ""
 	}
-	var registeredSymptom RegisteredSymptom
+	fmt.Println("body: " + string(body))
+	registeredSymptom := RegisteredSymptom{}
 	err := json.Unmarshal(body, &registeredSymptom)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		w.Write([]byte("400 - error with the json! " + err.Error()))
 		return ""
 	}
-	query := fmt.Sprintf("INSERT INTO registered_symptom (user, symptom, date, time) VALUES (%d, %d, %d, %d)", registeredSymptom.user, registeredSymptom.symptom, registeredSymptom.date, registeredSymptom.time)
+	query, _ := db.Prepare("INSERT INTO registered_symptom (user, symptom, datetime) VALUES (?, ?, ?)")
 
-	fmt.Println("Endpoint Hit: generate registered symptom " + query)
-	fmt.Fprintf(w, "{\"result\":\"ok\"}")
+	query.Exec(registeredSymptom.User, registeredSymptom.Symptom, registeredSymptom.Datetime.UTC())
 
-	return query
+	//fmt.Println("Endpoint Hit: generate registered symptom " + query)
+	//fmt.Fprintf(w, "{\"result\":\"ok\"}")
+
+	return ""//query
 }
 
 func create(w http.ResponseWriter, r *http.Request) {
