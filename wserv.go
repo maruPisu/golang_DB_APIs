@@ -74,6 +74,7 @@ func generateRegisteredSymptomQuery(w http.ResponseWriter, r *http.Request) stri
 	query := fmt.Sprintf("INSERT INTO registered_symptom (user, symptom, date, time) VALUES (%d, %d, %d, %d)", registeredSymptom.user, registeredSymptom.symptom, registeredSymptom.date, registeredSymptom.time)
 
 	fmt.Println("Endpoint Hit: generate registered symptom " + query)
+	fmt.Fprintf(w, "{\"result\":\"ok\"}")
 
 	return query
 }
