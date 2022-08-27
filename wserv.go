@@ -174,9 +174,9 @@ func handleRequests() {
 	router := mux.NewRouter().StrictSlash(true)
 	router.Use(Middleware)
 	router.HandleFunc("/", homePage)
-	router.HandleFunc("/table/{table_name:[a-z]+}", create).Methods("POST")
-	router.HandleFunc("/table/{table_name:[a-z]+}/{item_id:[0-9]+}", read)
-	router.HandleFunc("/table/{table_name:[a-z]+}", read)
+	router.HandleFunc("/table/{table_name:[a-zA-Z0-9_]+}", create).Methods("POST")
+	router.HandleFunc("/table/{table_name:[a-zA-Z0-9_]+}/{item_id:[0-9]+}", read)
+	router.HandleFunc("/table/{table_name:[a-zA-Z0-9_]+}", read)
 	log.Fatal(http.ListenAndServe(":10000", router))
 
 }
