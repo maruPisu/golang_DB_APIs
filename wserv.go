@@ -16,11 +16,23 @@ import (
 type Person struct {
 	FirstName  string `json:"firstName"`
 	SecondName string `json:"secondName"`
-}
-
+} 
+ 
 var db *sql.DB
 var err error
 var configuration Config
+
+/*
+select concat('"', s.name, '": false,')
+from
+(SELECT table_name as name FROM information_schema.tables where table_schema="gastro") as s;
+*/
+var openTables = map[string]bool {
+	"allergen":true, 
+	"feces":true, 
+	"symptom":true, 
+	"vitam_miner":true, 
+}
 
 type Config struct {
 	DB_USERNAME string
@@ -34,6 +46,32 @@ type RegisteredSymptom struct {
 	User     string    `json:"user"`
 	Symptom  string    `json:"symptom"`
 	Datetime time.Time `json:"datetime"`
+}
+
+type RegisteredFeces struct {
+	User     string    `json:"user"`
+	Feces    string    `json:"feces"`
+	Datetime time.Time `json:"datetime"`
+}
+
+type RegisteredMeal struct {
+	User     string    `json:"user"`
+	Datetime time.Time `json:"datetime"`
+}
+
+type RegisteredSupplement struct {
+	User     string    `json:"user"`
+	Datetime time.Time `json:"datetime"`
+}
+
+type AllergenInMeal struct {
+	Meal     string    `json:"meal"`
+	Allergen string    `json:"Allergen"`
+}
+
+type ComponentInSupplement struct {
+	Supplement  string    `json:"supplement"`
+	Component   string    `json:"component"`
 }
 
 func GetConfiguration() Config {
@@ -62,13 +100,13 @@ func connect() {
 	fmt.Println("succesfully connected to mysql")
 }
 
-func generateRegisteredSymptomQuery(w http.ResponseWriter, r *http.Request) {
+func createRegisteredSymptom(w http.ResponseWriter, r *http.Request) {
 	body, errRead := ioutil.ReadAll(r.Body)
 	if errRead != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		w.Write([]byte("400 - error with the json! " + err.Error()))
 	}
-	fmt.Println("body: " + string(body))
+	
 	registeredSymptom := RegisteredSymptom{}
 	err := json.Unmarshal(body, &registeredSymptom)
 	if err != nil {
@@ -78,6 +116,91 @@ func generateRegisteredSymptomQuery(w http.ResponseWriter, r *http.Request) {
 	query, _ := db.Prepare("INSERT INTO registered_symptom (user, symptom, datetime) VALUES (?, ?, ?)")
 
 	query.Exec(registeredSymptom.User, registeredSymptom.Symptom, registeredSymptom.Datetime.UTC())
+}
+
+func createRegisteredFeces(w http.ResponseWriter, r *http.Request) {
+	body, errRead := ioutil.ReadAll(r.Body)
+	if errRead != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte("400 - error with the json! " + err.Error()))
+	}
+	registeredFeces := RegisteredFeces{}
+	err := json.Unmarshal(body, &registeredFeces)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte("400 - error with the json! " + err.Error()))
+	}
+	query, _ := db.Prepare("INSERT INTO registered_feces (user, feces, datetime) VALUES (?, ?, ?)")
+
+	query.Exec(registeredFeces.User, registeredFeces.Feces, registeredFeces.Datetime.UTC())
+}
+
+func createRegisteredMeal(w http.ResponseWriter, r *http.Request) {
+	body, errRead := ioutil.ReadAll(r.Body)
+	if errRead != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte("400 - error with the json! " + err.Error()))
+	}
+	registeredMeal := RegisteredMeal{}
+	err := json.Unmarshal(body, &registeredMeal)	
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte("400 - error with the json! " + err.Error()))
+	}
+	query, _ := db.Prepare("INSERT INTO registered_meal (user, datetime) VALUES (?, ?)")
+
+	query.Exec(registeredMeal.User, registeredMeal.Datetime.UTC())
+}
+
+func createRegisteredSupplement(w http.ResponseWriter, r *http.Request) {
+	body, errRead := ioutil.ReadAll(r.Body)
+	if errRead != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte("400 - error with the json! " + err.Error()))
+	}
+	registeredSupplement := RegisteredSupplement{}
+	err := json.Unmarshal(body, &registeredSupplement)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte("400 - error with the json! " + err.Error()))
+	}
+	query, _ := db.Prepare("INSERT INTO registered_supplement (user, datetime) VALUES (?, ?)")
+
+	query.Exec(registeredSupplement.User, registeredSupplement.Datetime.UTC())
+}
+
+func createAllergenInMeal(w http.ResponseWriter, r *http.Request) {
+	body, errRead := ioutil.ReadAll(r.Body)
+	if errRead != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte("400 - error with the json! " + err.Error()))
+	}
+	allergenInMeal := AllergenInMeal{}
+	err := json.Unmarshal(body, &allergenInMeal)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte("400 - error with the json! " + err.Error()))
+	}
+	query, _ := db.Prepare("INSERT INTO allergen_in_meal (meal, allergen) VALUES (?, ?)")
+
+	query.Exec(allergenInMeal.Meal, allergenInMeal.Allergen)
+}
+
+func createComponentInSupplement(w http.ResponseWriter, r *http.Request) {
+	body, errRead := ioutil.ReadAll(r.Body)
+	if errRead != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte("400 - error with the json! " + err.Error()))
+	}
+	componentInSupplement := ComponentInSupplement{}
+	err := json.Unmarshal(body, &componentInSupplement)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte("400 - error with the json! " + err.Error()))
+	}
+	query, _ := db.Prepare("INSERT INTO component_in_supplement (supplement, component) VALUES (?, ?)")
+
+	query.Exec(componentInSupplement.Supplement, componentInSupplement.Component)
 }
 
 func create(w http.ResponseWriter, r *http.Request) {
@@ -91,7 +214,17 @@ func create(w http.ResponseWriter, r *http.Request) {
 
 	switch {
 	case table == "registered_symptom":
-		generateRegisteredSymptomQuery(w, r)
+		createRegisteredSymptom(w, r)	
+	case table == "registered_feces":
+		createRegisteredFeces(w, r)	
+	case table == "registered_meal":
+		createRegisteredMeal(w, r)	
+	case table == "registered_supplement":
+		createRegisteredSupplement(w, r)
+	case table == "allergen_in_meal":
+		createAllergenInMeal(w, r)
+	case table == "component_in_supplement":
+		createComponentInSupplement(w, r)
 	}
 }
 
