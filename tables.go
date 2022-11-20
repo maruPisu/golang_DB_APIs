@@ -4,6 +4,14 @@ import (
 	"time"
 )
 
+type Login struct {
+	Id  		string    `json:"id"`
+	Email  		string    `json:"email"`
+	Password   	string    `json:"password"`
+	Name   		string    `json:"name"`
+	GoogleId	string    `json:"googleid"`
+}
+
 type RegisteredSymptom struct {
 	User     string    `json:"user"`
 	Symptom  string    `json:"symptom"`

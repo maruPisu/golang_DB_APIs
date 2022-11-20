@@ -12,7 +12,7 @@ func createRegisteredSymptom(w http.ResponseWriter, r *http.Request, database *s
 	body, errRead := ioutil.ReadAll(r.Body)
 	if errRead != nil {
 		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte("400 - error with the json! " + err.Error()))
+		w.Write([]byte("400 - error with the body! " + err.Error()))
 	}
 	
 	registeredSymptom := RegisteredSymptom{}
@@ -30,7 +30,7 @@ func createRegisteredFeces(w http.ResponseWriter, r *http.Request, database *sql
 	body, errRead := ioutil.ReadAll(r.Body)
 	if errRead != nil {
 		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte("400 - error with the json! " + err.Error()))
+		w.Write([]byte("400 - error with the body! " + err.Error()))
 	}
 	registeredFeces := RegisteredFeces{}
 	err := json.Unmarshal(body, &registeredFeces)
@@ -47,7 +47,7 @@ func createRegisteredMeal(w http.ResponseWriter, r *http.Request, database *sql.
 	body, errRead := ioutil.ReadAll(r.Body)
 	if errRead != nil {
 		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte("400 - error with the json! " + err.Error()))
+		w.Write([]byte("400 - error with the body! " + err.Error()))
 	}
 	registeredMeal := RegisteredMeal{}
 	err := json.Unmarshal(body, &registeredMeal)	
@@ -64,7 +64,7 @@ func createRegisteredSupplement(w http.ResponseWriter, r *http.Request, database
 	body, errRead := ioutil.ReadAll(r.Body)
 	if errRead != nil {
 		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte("400 - error with the json! " + err.Error()))
+		w.Write([]byte("400 - error with the body! " + err.Error()))
 	}
 	registeredSupplement := RegisteredSupplement{}
 	err := json.Unmarshal(body, &registeredSupplement)
@@ -81,7 +81,7 @@ func createAllergenInMeal(w http.ResponseWriter, r *http.Request, database *sql.
 	body, errRead := ioutil.ReadAll(r.Body)
 	if errRead != nil {
 		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte("400 - error with the json! " + err.Error()))
+		w.Write([]byte("400 - error with the body! " + err.Error()))
 	}
 	allergenInMeal := AllergenInMeal{}
 	err := json.Unmarshal(body, &allergenInMeal)
@@ -98,7 +98,7 @@ func createComponentInSupplement(w http.ResponseWriter, r *http.Request, databas
 	body, errRead := ioutil.ReadAll(r.Body)
 	if errRead != nil {
 		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte("400 - error with the json! " + err.Error()))
+		w.Write([]byte("400 - error with the body! " + err.Error()))
 	}
 	componentInSupplement := ComponentInSupplement{}
 	err := json.Unmarshal(body, &componentInSupplement)

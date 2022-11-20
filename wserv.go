@@ -1,20 +1,24 @@
 package main
 
 import (
+	"io/ioutil"
 	"database/sql"
 	"encoding/json"
+	"encoding/hex"
 	"fmt"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/gorilla/mux"
 	"github.com/tkanos/gonfig"
 	"log"
 	"net/http"
+    "crypto/sha256"
+    "strconv"
+    "time"
 )
- 
+
 var db *sql.DB
 var err error
 var configuration Config
-
 
 type Config struct {
 	DB_USERNAME string
@@ -29,6 +33,25 @@ func GetConfiguration() Config {
 	fileName := "./conf.json"
 	gonfig.GetConf(fileName, &config)
 	return config
+}
+
+func checkUser(user_id int, sha string) bool {	
+	now := time.Now()     
+	sec := now.Unix() % 2147483648
+	
+	for i := 1; i < 5; i++ {
+		plain := strconv.Itoa(user_id) + "X249CIAoi_22j%J3" + strconv.Itoa(int(sec) - i)
+		fmt.Println("plain ", plain)
+		
+		h := sha256.Sum256([]byte(plain))	
+		hash_string := hex.EncodeToString(h[:])	
+		fmt.Println("hash_string ", hash_string)
+		if(hash_string == sha){
+			return true
+		}
+	}
+	fmt.Println("sha ", sha)
+	return false
 }
 
 func homePage(w http.ResponseWriter, r *http.Request) {
@@ -48,6 +71,55 @@ func connect() {
 		panic("error pinging server " + err.Error())
 	}
 	fmt.Println("succesfully connected to mysql")
+}
+
+func login(w http.ResponseWriter, r *http.Request) {
+	
+	if err := r.ParseForm(); err != nil {
+		fmt.Fprintf(w, "ParseForm() err: %v", err)
+		return
+	}
+	
+	body, errRead := ioutil.ReadAll(r.Body)
+	if errRead != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte("400 - error with the body! " + err.Error()))
+	}
+	
+	login := Login{}
+	err := json.Unmarshal(body, &login)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte("400 - error with the json! " + err.Error()))
+	}
+	
+	// choose the right login option
+	if len(login.GoogleId) == 0 { 
+		// manual request 
+		if len(login.Name) == 0 {
+			// Log in
+			normalLogin(w, &login, db)
+		}else{
+			// Sign in
+			normalSignin(w, &login, db)
+		}
+	}else{
+		// Google request
+		googleLogin(w, &login, db)
+	}
+	if len(login.Id) == 0 {
+		// user not found
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte("400 - user not found! "))
+		return
+	}
+	fmt.Fprintf(w, "{\"data\":{")
+	fmt.Fprintf(w, "\"id\":\"" + login.Id + "\",")
+	fmt.Fprintf(w, "\"email\":\"" + login.Email + "\",")
+	fmt.Fprintf(w, "\"name\":\"" + login.Name + "\",")
+	fmt.Fprintf(w, "\"googleid\":\"" + login.GoogleId + "\"")
+	
+	fmt.Fprintf(w, "}}")
 }
 
 func create(w http.ResponseWriter, r *http.Request) {
@@ -80,6 +152,15 @@ func read(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	table := params["table_name"]
 	item_id := params["item_id"]
+	user_id, _ := strconv.Atoi(params["user_id"])
+	hash := params["hash"]
+	
+	if(!checkUser(user_id, hash)){
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte("400 - wrong hash! "))
+		return
+	}
+	
 	fmt.Println("read table: ", table)
 	extra := ""
 
@@ -152,9 +233,10 @@ func handleRequests() {
 	router := mux.NewRouter().StrictSlash(true)
 	router.Use(Middleware)
 	router.HandleFunc("/", homePage)
-	router.HandleFunc("/table/{table_name:[a-zA-Z0-9_]+}", create).Methods("POST")
-	router.HandleFunc("/table/{table_name:[a-zA-Z0-9_]+}/{item_id:[0-9]+}", read)
-	router.HandleFunc("/table/{table_name:[a-zA-Z0-9_]+}", read)
+	router.HandleFunc("/login", login).Methods("POST")
+	router.HandleFunc("/user/{user_id:[0-9]+}/{hash:[a-zA-Z0-9_]+}/table/{table_name:[a-zA-Z0-9_]+}", create).Methods("POST")
+	router.HandleFunc("/user/{user_id:[0-9]+}/{hash:[a-zA-Z0-9_]+}/table/{table_name:[a-zA-Z0-9_]+}/{item_id:[0-9]+}", read)
+	router.HandleFunc("/user/{user_id:[0-9]+}/{hash:[a-zA-Z0-9_]+}/table/{table_name:[a-zA-Z0-9_]+}", read)
 	log.Fatal(http.ListenAndServe(":10000", router))
 
 }
