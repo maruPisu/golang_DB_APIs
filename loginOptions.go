@@ -9,7 +9,7 @@ import (
 )
 
 func readLoginTable(w http.ResponseWriter, login *Login, database *sql.DB){
-	query := "SELECT id, email, name, googleid FROM login_infos WHERE email = '" +  login.Email + "'"
+	query := "SELECT id, email, name, googleid FROM user WHERE email = '" +  login.Email + "'"
 
 	rows, err := db.Query(query)
 	if err != nil {
@@ -35,14 +35,23 @@ func readLoginTable(w http.ResponseWriter, login *Login, database *sql.DB){
 	}
 }
 
+func checkPassword(oldPassword string, newPassword string) bool{
+	return oldPassword == newPassword
+}
+
 func normalLogin(w http.ResponseWriter, login *Login, database *sql.DB) {
+	password := login.Password
 	readLoginTable(w, login, database)
+	
+	if(!checkPassword(password, login.Password)){
+		login.Id = ""
+	}
 }
 
 func normalSignin(w http.ResponseWriter, login *Login, database *sql.DB) {
 
 	//query, _ := database.Prepare("INSERT INTO login_infos (email, name, password) VALUES ('?', '?', '?')")
-	query := "INSERT INTO login_infos (email, name, password) VALUES ('" + login.Email + "', '" + login.Name + "', '" + login.Password + "')"
+	query := "INSERT INTO user (email, name, password) VALUES ('" + login.Email + "', '" + login.Name + "', '" + login.Password + "')"
 	
 	_, err := db.Query(query)
 	if err != nil {
@@ -66,7 +75,7 @@ func googleLogin(w http.ResponseWriter, login *Login, database *sql.DB) {
 	
 	if len(login.Id) == 0 {
 		//create user with tmpLogin	infos
-		query := "INSERT INTO login_infos (email, name, googleid) VALUES ('" + login.Email + "', '" + login.Name + "', '" + login.GoogleId + "')"
+		query := "INSERT INTO user (email, name, googleid) VALUES ('" + login.Email + "', '" + login.Name + "', '" + login.GoogleId + "')"
 		
 		_, err := db.Query(query)
 		if err != nil {
