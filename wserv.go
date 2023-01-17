@@ -36,10 +36,11 @@ func GetConfiguration() Config {
 }
 
 func checkUser(user_id int, sha string) bool {	
-	now := time.Now()     
+	loc, _ := time.LoadLocation("Europe/Madrid")
+	now := time.Now().In(loc)
 	sec := now.Unix() % 2147483648
 	
-	for i := 1; i < 5; i++ {
+	for i := 0; i < 5; i++ {
 		plain := strconv.Itoa(user_id) + "X249CIAoi_22j%J3" + strconv.Itoa(int(sec) - i)
 		fmt.Println("plain ", plain)
 		
