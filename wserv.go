@@ -19,6 +19,13 @@ import (
 var db *sql.DB
 var err error
 var configuration Config
+var tablesWithUser = map[string]bool {
+    "registered_feces": true,
+    "registered_meal": true,
+    "registered_supplement": true,
+    "registered_symptom": true,
+    "v_user_symptoms": true,
+}
 
 type Config struct {
 	DB_USERNAME string
@@ -164,9 +171,17 @@ func read(w http.ResponseWriter, r *http.Request) {
 	
 	fmt.Println("read table: ", table)
 	extra := ""
+	if tablesWithUser[table] {
+		extra = " where user = " + params["user_id"]
+	}
 
 	if item_id != "" {
-		extra = " where id = " + item_id
+		if extra != "" {
+			extra = " with "
+		}else{
+			extra = extra + " and "
+		}
+		extra = extra + "id = " + item_id
 	}
 
 	var query = `SELECT * FROM ` + table + extra
