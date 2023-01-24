@@ -141,4 +141,11 @@ CREATE ALGORITHM=UNDEFINED SQL SECURITY DEFINER VIEW `v_user_anything` AS select
 DROP TABLE IF EXISTS `v_user_symptoms`;
 CREATE ALGORITHM=UNDEFINED SQL SECURITY DEFINER VIEW `v_user_symptoms` AS select `r_s`.`id` AS `reg_id`,`u`.`id` AS `user`,`u`.`email` AS `email`,`r_s`.`datetime` AS `datetime`,`s`.`id` AS `s_id`,`s`.`name` AS `s_name` from ((`user` `u` join `registered_symptom` `r_s` on((`r_s`.`user` = `u`.`id`))) join `symptom` `s` on((`s`.`id` = `r_s`.`symptom`)));
 
+DROP VIEW IF EXISTS `v_all_entries`;
+CREATE TABLE `v_all_entries` (`user` int, `date` date, `id` int, `type-en` varchar(10), `type-es` varchar(10));
+
+
+DROP TABLE IF EXISTS `v_all_entries`;
+CREATE ALGORITHM=UNDEFINED SQL SECURITY DEFINER VIEW `v_all_entries` AS select `query`.`user` AS `user`,`query`.`date` AS `date`,`query`.`id` AS `id`,`query`.`type-en` AS `type-en`,`query`.`type-es` AS `type-es` from (select `sy`.`id` AS `id`,`sy`.`user` AS `user`,cast(`sy`.`datetime` as date) AS `date`,'Symptom' AS `type-en`,'Sintoma' AS `type-es` from `registered_symptom` `sy` union select `sy`.`id` AS `id`,`sy`.`user` AS `user`,cast(`sy`.`datetime` as date) AS `date`,'Feces' AS `type-en`,'Heces' AS `type-es` from `registered_feces` `sy` union select `sy`.`id` AS `id`,`sy`.`user` AS `user`,cast(`sy`.`datetime` as date) AS `date`,'Meal' AS `type-en`,'Comida' AS `type-es` from `registered_meal` `sy` union select `sy`.`id` AS `id`,`sy`.`user` AS `user`,cast(`sy`.`datetime` as date) AS `date`,'Supplement' AS `type-en`,'Suplemento' AS `type-es` from `registered_supplement` `sy`) `query`;
+
 -- 2023-01-23 16:43:05
