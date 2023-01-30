@@ -35,12 +35,13 @@ type Config struct {
 	DB_PORT     string
 	DB_HOST     string
 	DB_NAME     string
+	HASH_NOISE  string
 }
 
 func GetConfiguration() Config {
 	config := Config{}
 	fileName := "./conf.json"
-	gonfig.GetConf(fileName, &config)
+	gonfig.GetConf(fileName, &config) 
 	return config
 }
 
@@ -50,7 +51,7 @@ func checkUser(user_id int, sha string) bool {
 	sec := now.Unix() % 2147483648
 	
 	for i := 0; i < 5; i++ {
-		plain := strconv.Itoa(user_id) + "X249CIAoi_22j%J3" + strconv.Itoa(int(sec) - i)
+		plain := strconv.Itoa(user_id) + configuration.HASH_NOISE + strconv.Itoa(int(sec) - i)
 		fmt.Println("plain ", plain)
 		
 		h := sha256.Sum256([]byte(plain))	
