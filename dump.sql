@@ -128,7 +128,7 @@ CREATE TABLE `user` (
 
 
 DROP VIEW IF EXISTS `v_all_entries`;
-CREATE TABLE `v_all_entries` (`user` int, `date` date, `id` int, `type-en` varchar(10), `type-es` varchar(10));
+CREATE TABLE `v_all_entries` (`user` int, `date` date, `id` int, `type-en` varchar(10), `type-es` varchar(10), `value` mediumtext);
 
 
 DROP VIEW IF EXISTS `v_user_anything`;
@@ -136,37 +136,37 @@ CREATE TABLE `v_user_anything` (`user` int, `date` date, `count(*)` bigint);
 
 
 DROP VIEW IF EXISTS `v_user_feces`;
-CREATE TABLE `v_user_feces` (`user` int, `datetime` datetime, `id` int, `name` varchar(100));
+CREATE TABLE `v_user_feces` (`user` int, `datetime` datetime, `id` int, `value` varchar(100));
 
 
 DROP VIEW IF EXISTS `v_user_meals`;
-CREATE TABLE `v_user_meals` (`user` int, `datetime` datetime, `meal` int, `allergens` text);
+CREATE TABLE `v_user_meals` (`user` int, `datetime` datetime, `id` int, `value` text);
 
 
 DROP VIEW IF EXISTS `v_user_supplement`;
-CREATE TABLE `v_user_supplement` (`user` int, `datetime` datetime, `supplement` int, `components` text);
+CREATE TABLE `v_user_supplement` (`user` int, `datetime` datetime, `id` int, `value` text);
 
 
 DROP VIEW IF EXISTS `v_user_symptoms`;
-CREATE TABLE `v_user_symptoms` (`reg_id` int, `user` int, `email` varchar(100), `datetime` datetime, `s_id` int, `s_name` varchar(100));
+CREATE TABLE `v_user_symptoms` (`user` int, `datetime` datetime, `id` int, `value` varchar(100));
 
 
 DROP TABLE IF EXISTS `v_all_entries`;
-CREATE ALGORITHM=UNDEFINED SQL SECURITY DEFINER VIEW `v_all_entries` AS select `query`.`user` AS `user`,`query`.`date` AS `date`,`query`.`id` AS `id`,`query`.`type-en` AS `type-en`,`query`.`type-es` AS `type-es` from (select `sy`.`id` AS `id`,`sy`.`user` AS `user`,cast(`sy`.`datetime` as date) AS `date`,'Symptom' AS `type-en`,'Sintoma' AS `type-es` from `registered_symptom` `sy` union select `sy`.`id` AS `id`,`sy`.`user` AS `user`,cast(`sy`.`datetime` as date) AS `date`,'Feces' AS `type-en`,'Heces' AS `type-es` from `registered_feces` `sy` union select `sy`.`id` AS `id`,`sy`.`user` AS `user`,cast(`sy`.`datetime` as date) AS `date`,'Meal' AS `type-en`,'Comida' AS `type-es` from `registered_meal` `sy` union select `sy`.`id` AS `id`,`sy`.`user` AS `user`,cast(`sy`.`datetime` as date) AS `date`,'Supplement' AS `type-en`,'Suplemento' AS `type-es` from `registered_supplement` `sy`) `query`;
+CREATE ALGORITHM=UNDEFINED SQL SECURITY DEFINER VIEW `v_all_entries` AS select `query`.`user` AS `user`,`query`.`date` AS `date`,`query`.`id` AS `id`,`query`.`type-en` AS `type-en`,`query`.`type-es` AS `type-es`,`query`.`value` AS `value` from (select `sy`.`id` AS `id`,`sy`.`user` AS `user`,`sy`.`value` AS `value`,cast(`sy`.`datetime` as date) AS `date`,'Symptom' AS `type-en`,'Sintoma' AS `type-es` from `v_user_symptoms` `sy` union select `sy`.`id` AS `id`,`sy`.`user` AS `user`,`sy`.`value` AS `value`,cast(`sy`.`datetime` as date) AS `date`,'Feces' AS `type-en`,'Heces' AS `type-es` from `v_user_feces` `sy` union select `sy`.`id` AS `id`,`sy`.`user` AS `user`,`sy`.`value` AS `value`,cast(`sy`.`datetime` as date) AS `date`,'Meal' AS `type-en`,'Comida' AS `type-es` from `v_user_meals` `sy` union select `sy`.`id` AS `id`,`sy`.`user` AS `user`,`sy`.`value` AS `value`,cast(`sy`.`datetime` as date) AS `date`,'Supplement' AS `type-en`,'Suplemento' AS `type-es` from `v_user_supplement` `sy`) `query`;
 
 DROP TABLE IF EXISTS `v_user_anything`;
 CREATE ALGORITHM=UNDEFINED SQL SECURITY DEFINER VIEW `v_user_anything` AS select `query`.`user` AS `user`,`query`.`date` AS `date`,count(0) AS `count(*)` from (select `sy`.`id` AS `id`,`sy`.`user` AS `user`,cast(`sy`.`datetime` as date) AS `date`,'sy' AS `type` from `registered_symptom` `sy` union select `sy`.`id` AS `id`,`sy`.`user` AS `user`,cast(`sy`.`datetime` as date) AS `date`,'fe' AS `type` from `registered_feces` `sy` union select `sy`.`id` AS `id`,`sy`.`user` AS `user`,cast(`sy`.`datetime` as date) AS `date`,'me' AS `type` from `registered_meal` `sy` union select `sy`.`id` AS `id`,`sy`.`user` AS `user`,cast(`sy`.`datetime` as date) AS `date`,'su' AS `type` from `registered_supplement` `sy`) `query` group by `query`.`user`,`query`.`date`;
 
 DROP TABLE IF EXISTS `v_user_feces`;
-CREATE ALGORITHM=UNDEFINED SQL SECURITY DEFINER VIEW `v_user_feces` AS select `r_f`.`user` AS `user`,`r_f`.`datetime` AS `datetime`,`r_f`.`id` AS `id`,`f`.`name` AS `name` from (`registered_feces` `r_f` join `feces` `f` on((`r_f`.`feces` = `f`.`id`)));
+CREATE ALGORITHM=UNDEFINED SQL SECURITY DEFINER VIEW `v_user_feces` AS select `r_f`.`user` AS `user`,`r_f`.`datetime` AS `datetime`,`r_f`.`id` AS `id`,`f`.`name` AS `value` from (`registered_feces` `r_f` join `feces` `f` on((`r_f`.`feces` = `f`.`id`)));
 
 DROP TABLE IF EXISTS `v_user_meals`;
-CREATE ALGORITHM=UNDEFINED SQL SECURITY DEFINER VIEW `v_user_meals` AS select `r_m`.`user` AS `user`,`r_m`.`datetime` AS `datetime`,`a_m`.`meal` AS `meal`,group_concat(`a`.`name` separator ',') AS `allergens` from ((`registered_meal` `r_m` join `allergen_in_meal` `a_m` on((`r_m`.`id` = `a_m`.`meal`))) join `allergen` `a` on((`a_m`.`allergen` = `a`.`id`))) group by `a_m`.`meal`;
+CREATE ALGORITHM=UNDEFINED SQL SECURITY DEFINER VIEW `v_user_meals` AS select `r_m`.`user` AS `user`,`r_m`.`datetime` AS `datetime`,`a_m`.`meal` AS `id`,group_concat(`a`.`name` separator ',') AS `value` from ((`registered_meal` `r_m` join `allergen_in_meal` `a_m` on((`r_m`.`id` = `a_m`.`meal`))) join `allergen` `a` on((`a_m`.`allergen` = `a`.`id`))) group by `a_m`.`meal`;
 
 DROP TABLE IF EXISTS `v_user_supplement`;
-CREATE ALGORITHM=UNDEFINED SQL SECURITY DEFINER VIEW `v_user_supplement` AS select `r_s`.`user` AS `user`,`r_s`.`datetime` AS `datetime`,`c_s`.`supplement` AS `supplement`,group_concat(`c`.`name` separator ',') AS `components` from ((`registered_supplement` `r_s` join `component_in_supplement` `c_s` on((`r_s`.`id` = `c_s`.`supplement`))) join `component` `c` on((`c_s`.`component` = `c`.`id`))) group by `c_s`.`supplement`;
+CREATE ALGORITHM=UNDEFINED SQL SECURITY DEFINER VIEW `v_user_supplement` AS select `r_s`.`user` AS `user`,`r_s`.`datetime` AS `datetime`,`c_s`.`supplement` AS `id`,group_concat(`c`.`name` separator ',') AS `value` from ((`registered_supplement` `r_s` join `component_in_supplement` `c_s` on((`r_s`.`id` = `c_s`.`supplement`))) join `component` `c` on((`c_s`.`component` = `c`.`id`))) group by `c_s`.`supplement`;
 
 DROP TABLE IF EXISTS `v_user_symptoms`;
-CREATE ALGORITHM=UNDEFINED SQL SECURITY DEFINER VIEW `v_user_symptoms` AS select `r_s`.`id` AS `reg_id`,`u`.`id` AS `user`,`u`.`email` AS `email`,`r_s`.`datetime` AS `datetime`,`s`.`id` AS `s_id`,`s`.`name` AS `s_name` from ((`user` `u` join `registered_symptom` `r_s` on((`r_s`.`user` = `u`.`id`))) join `symptom` `s` on((`s`.`id` = `r_s`.`symptom`)));
+CREATE ALGORITHM=UNDEFINED SQL SECURITY DEFINER VIEW `v_user_symptoms` AS select `u`.`id` AS `user`,`r_s`.`datetime` AS `datetime`,`r_s`.`id` AS `id`,`s`.`name` AS `value` from ((`user` `u` join `registered_symptom` `r_s` on((`r_s`.`user` = `u`.`id`))) join `symptom` `s` on((`s`.`id` = `r_s`.`symptom`)));
 
--- 2023-01-24 18:48:55
+-- 2023-02-05 17:54:47
