@@ -50,7 +50,7 @@ func checkUser(user_id int, sha string) bool {
 	now := time.Now().In(loc)
 	sec := now.Unix() % 2147483648
 	
-	for i := 0; i < 5; i++ {
+	for i := -1; i < 5; i++ {
 		plain := strconv.Itoa(user_id) + configuration.HASH_NOISE + strconv.Itoa(int(sec) - i)
 		fmt.Println("plain ", plain)
 		
