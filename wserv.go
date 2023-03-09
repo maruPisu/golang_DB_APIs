@@ -152,7 +152,7 @@ func create(w http.ResponseWriter, r *http.Request) {
 	case table == "registered_supplement":
 		createRegisteredSupplement(w, r, db)
 	case table == "allergen_in_meal":
-		createRegisteredSupplement(w, r, db)
+		createAllergenInMeal(w, r, db)
 	case table == "component_in_supplement":
 		createComponentInSupplement(w, r, db)
 	}
