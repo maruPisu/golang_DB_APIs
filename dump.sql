@@ -128,7 +128,7 @@ CREATE TABLE `user` (
 
 
 DROP VIEW IF EXISTS `v_all_entries`;
-CREATE TABLE `v_all_entries` (`user` int, `date` date, `id` int, `type-en` varchar(10), `type-es` varchar(10), `value` mediumtext);
+CREATE TABLE `v_all_entries` (`user` int, `date` date, `time` time, `id` int, `table` varchar(21), `type-en` varchar(10), `type-es` varchar(10), `value` mediumtext);
 
 
 DROP VIEW IF EXISTS `v_user_anything`;
@@ -152,7 +152,7 @@ CREATE TABLE `v_user_symptoms` (`user` int, `datetime` datetime, `id` int, `valu
 
 
 DROP TABLE IF EXISTS `v_all_entries`;
-CREATE ALGORITHM=UNDEFINED SQL SECURITY DEFINER VIEW `v_all_entries` AS select `query`.`user` AS `user`,`query`.`date` AS `date`,`query`.`id` AS `id`,`query`.`type-en` AS `type-en`,`query`.`type-es` AS `type-es`,`query`.`value` AS `value` from (select `sy`.`id` AS `id`,`sy`.`user` AS `user`,`sy`.`value` AS `value`,cast(`sy`.`datetime` as date) AS `date`,'Symptom' AS `type-en`,'Sintoma' AS `type-es` from `v_user_symptoms` `sy` union select `sy`.`id` AS `id`,`sy`.`user` AS `user`,`sy`.`value` AS `value`,cast(`sy`.`datetime` as date) AS `date`,'Feces' AS `type-en`,'Heces' AS `type-es` from `v_user_feces` `sy` union select `sy`.`id` AS `id`,`sy`.`user` AS `user`,`sy`.`value` AS `value`,cast(`sy`.`datetime` as date) AS `date`,'Meal' AS `type-en`,'Comida' AS `type-es` from `v_user_meals` `sy` union select `sy`.`id` AS `id`,`sy`.`user` AS `user`,`sy`.`value` AS `value`,cast(`sy`.`datetime` as date) AS `date`,'Supplement' AS `type-en`,'Suplemento' AS `type-es` from `v_user_supplement` `sy`) `query`;
+CREATE ALGORITHM=UNDEFINED SQL SECURITY DEFINER VIEW `v_all_entries` AS select `query`.`user` AS `user`,`query`.`date` AS `date`,`query`.`time` AS `time`,`query`.`id` AS `id`,`query`.`table` AS `table`,`query`.`type-en` AS `type-en`,`query`.`type-es` AS `type-es`,`query`.`value` AS `value` from (select `sy`.`id` AS `id`,`sy`.`user` AS `user`,`sy`.`value` AS `value`,cast(`sy`.`datetime` as date) AS `date`,cast(`sy`.`datetime` as time) AS `time`,'registered_symptom' AS `table`,'Symptom' AS `type-en`,'Sintoma' AS `type-es` from `v_user_symptoms` `sy` union select `sy`.`id` AS `id`,`sy`.`user` AS `user`,`sy`.`value` AS `value`,cast(`sy`.`datetime` as date) AS `date`,cast(`sy`.`datetime` as time) AS `time`,'registered_feces' AS `table`,'Feces' AS `type-en`,'Heces' AS `type-es` from `v_user_feces` `sy` union select `sy`.`id` AS `id`,`sy`.`user` AS `user`,`sy`.`value` AS `value`,cast(`sy`.`datetime` as date) AS `date`,cast(`sy`.`datetime` as time) AS `time`,'registered_meal' AS `table`,'Meal' AS `type-en`,'Comida' AS `type-es` from `v_user_meals` `sy` union select `sy`.`id` AS `id`,`sy`.`user` AS `user`,`sy`.`value` AS `value`,cast(`sy`.`datetime` as date) AS `date`,cast(`sy`.`datetime` as time) AS `time`,'registered_supplement' AS `table`,'Supplement' AS `type-en`,'Suplemento' AS `type-es` from `v_user_supplement` `sy`) `query`;
 
 DROP TABLE IF EXISTS `v_user_anything`;
 CREATE ALGORITHM=UNDEFINED SQL SECURITY DEFINER VIEW `v_user_anything` AS select `query`.`user` AS `user`,`query`.`date` AS `date`,count(0) AS `count(*)` from (select `sy`.`id` AS `id`,`sy`.`user` AS `user`,cast(`sy`.`datetime` as date) AS `date`,'sy' AS `type` from `registered_symptom` `sy` union select `sy`.`id` AS `id`,`sy`.`user` AS `user`,cast(`sy`.`datetime` as date) AS `date`,'fe' AS `type` from `registered_feces` `sy` union select `sy`.`id` AS `id`,`sy`.`user` AS `user`,cast(`sy`.`datetime` as date) AS `date`,'me' AS `type` from `registered_meal` `sy` union select `sy`.`id` AS `id`,`sy`.`user` AS `user`,cast(`sy`.`datetime` as date) AS `date`,'su' AS `type` from `registered_supplement` `sy`) `query` group by `query`.`user`,`query`.`date`;
@@ -169,4 +169,4 @@ CREATE ALGORITHM=UNDEFINED SQL SECURITY DEFINER VIEW `v_user_supplement` AS sele
 DROP TABLE IF EXISTS `v_user_symptoms`;
 CREATE ALGORITHM=UNDEFINED SQL SECURITY DEFINER VIEW `v_user_symptoms` AS select `u`.`id` AS `user`,`r_s`.`datetime` AS `datetime`,`r_s`.`id` AS `id`,`s`.`name` AS `value` from ((`user` `u` join `registered_symptom` `r_s` on((`r_s`.`user` = `u`.`id`))) join `symptom` `s` on((`s`.`id` = `r_s`.`symptom`)));
 
--- 2023-02-05 17:54:47
+-- 2023-03-10 20:59:38
