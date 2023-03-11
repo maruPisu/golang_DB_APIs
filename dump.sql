@@ -19,10 +19,10 @@ CREATE TABLE `allergen_in_meal` (
   `meal` int NOT NULL,
   `allergen` int NOT NULL,
   PRIMARY KEY (`id`),
-  KEY `meal` (`meal`),
   KEY `allergen` (`allergen`),
-  CONSTRAINT `allergen_in_meal_ibfk_1` FOREIGN KEY (`meal`) REFERENCES `registered_meal` (`id`),
-  CONSTRAINT `allergen_in_meal_ibfk_2` FOREIGN KEY (`allergen`) REFERENCES `allergen` (`id`)
+  KEY `meal` (`meal`),
+  CONSTRAINT `allergen_in_meal_ibfk_2` FOREIGN KEY (`allergen`) REFERENCES `allergen` (`id`),
+  CONSTRAINT `allergen_in_meal_ibfk_3` FOREIGN KEY (`meal`) REFERENCES `registered_meal` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
 
 
@@ -41,10 +41,10 @@ CREATE TABLE `component_in_supplement` (
   `supplement` int NOT NULL,
   `component` int NOT NULL,
   PRIMARY KEY (`id`),
-  KEY `component` (`component`),
   KEY `supplement` (`supplement`),
-  CONSTRAINT `component_in_supplement_ibfk_2` FOREIGN KEY (`component`) REFERENCES `component` (`id`),
-  CONSTRAINT `component_in_supplement_ibfk_3` FOREIGN KEY (`supplement`) REFERENCES `registered_supplement` (`id`)
+  KEY `component` (`component`),
+  CONSTRAINT `component_in_supplement_ibfk_3` FOREIGN KEY (`supplement`) REFERENCES `registered_supplement` (`id`),
+  CONSTRAINT `component_in_supplement_ibfk_4` FOREIGN KEY (`component`) REFERENCES `component` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
 
 
@@ -169,4 +169,4 @@ CREATE ALGORITHM=UNDEFINED SQL SECURITY DEFINER VIEW `v_user_supplement` AS sele
 DROP TABLE IF EXISTS `v_user_symptoms`;
 CREATE ALGORITHM=UNDEFINED SQL SECURITY DEFINER VIEW `v_user_symptoms` AS select `u`.`id` AS `user`,`r_s`.`datetime` AS `datetime`,`r_s`.`id` AS `id`,`s`.`name` AS `value` from ((`user` `u` join `registered_symptom` `r_s` on((`r_s`.`user` = `u`.`id`))) join `symptom` `s` on((`s`.`id` = `r_s`.`symptom`)));
 
--- 2023-03-10 20:59:38
+-- 2023-03-11 10:06:20
