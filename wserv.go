@@ -162,10 +162,11 @@ func delete(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	table := params["table_name"]
 	item_id := params["item_id"]
+	user_id, _ := params["user_id"]
 	
 	fmt.Println("delete item from ", table)
 	
-	var extra = ` where id = ` + item_id
+	var extra = ` where id = ` + item_id + ` and user = ` + user_id
 	
 	var query = `DELETE FROM ` + table + extra
 	fmt.Println("query: ", query)
