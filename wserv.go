@@ -158,6 +158,30 @@ func create(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func delete(w http.ResponseWriter, r *http.Request) {
+	params := mux.Vars(r)
+	table := params["table_name"]
+	item_id := params["item_id"]
+	
+	fmt.Println("delete item from ", table)
+	
+	var extra = ` where id = ` + item_id
+	
+	var query = `DELETE FROM ` + table + extra
+	fmt.Println("query: ", query)
+	
+	_, err := db.Query(query)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte("400 - error with the query! " + err.Error()))
+		return
+		//panic("error with the query '" + query + "': " + err.Error())
+	}
+	fmt.Println("ok: ", query)
+	
+	fmt.Fprintf(w, "{\"data\":{\"result\": \"ok\"}}")
+}
+
 func read(w http.ResponseWriter, r *http.Request) {
 
 	params := mux.Vars(r)
@@ -254,6 +278,7 @@ func handleRequests() {
 	router.HandleFunc("/", homePage)
 	router.HandleFunc("/login", login).Methods("POST")
 	router.HandleFunc("/user/{user_id:[0-9]+}/{hash:[a-zA-Z0-9_]+}/table/{table_name:[a-zA-Z0-9_]+}", create).Methods("POST")
+	router.HandleFunc("/user/{user_id:[0-9]+}/{hash:[a-zA-Z0-9_]+}/table/{table_name:[a-zA-Z0-9_]+}/{item_id:[0-9]+}", delete).Methods("DELETE")
 	router.HandleFunc("/user/{user_id:[0-9]+}/{hash:[a-zA-Z0-9_]+}/table/{table_name:[a-zA-Z0-9_]+}/{item_id:[0-9]+}", read)
 	router.HandleFunc("/user/{user_id:[0-9]+}/{hash:[a-zA-Z0-9_]+}/table/{table_name:[a-zA-Z0-9_]+}", read)
 	log.Fatal(http.ListenAndServe(":10000", router))
