@@ -11,6 +11,10 @@ CREATE TABLE `allergen` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
 
 
+DROP VIEW IF EXISTS `allergen_all_languages`;
+CREATE TABLE `allergen_all_languages` (`id` int, `name_en` varchar(100), `description_en` varchar(100), `name_es` varchar(100), `description_es` varchar(100));
+
+
 DROP TABLE IF EXISTS `allergen_en`;
 CREATE TABLE `allergen_en` (
   `allergen` int NOT NULL,
@@ -71,6 +75,10 @@ CREATE TABLE `feces` (
   `id` int NOT NULL AUTO_INCREMENT,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
+
+
+DROP VIEW IF EXISTS `feces_all_languages`;
+CREATE TABLE `feces_all_languages` (`id` int, `name_en` varchar(100), `description_en` varchar(100), `name_es` varchar(100), `description_es` varchar(100));
 
 
 DROP TABLE IF EXISTS `feces_en`;
@@ -150,6 +158,10 @@ CREATE TABLE `symptom` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
 
 
+DROP VIEW IF EXISTS `symptom_all_languages`;
+CREATE TABLE `symptom_all_languages` (`id` int, `name_en` varchar(100), `description_en` varchar(100), `name_es` varchar(100), `description_es` varchar(100));
+
+
 DROP TABLE IF EXISTS `symptom_en`;
 CREATE TABLE `symptom_en` (
   `symptom` int NOT NULL,
@@ -205,6 +217,15 @@ DROP VIEW IF EXISTS `v_user_symptoms`;
 CREATE TABLE `v_user_symptoms` (`user` int, `datetime` datetime, `id` int, `value_en` varchar(100), `value_es` varchar(100));
 
 
+DROP TABLE IF EXISTS `allergen_all_languages`;
+CREATE ALGORITHM=UNDEFINED SQL SECURITY DEFINER VIEW `allergen_all_languages` AS select `a`.`id` AS `id`,`en`.`name` AS `name_en`,`en`.`description` AS `description_en`,`es`.`name` AS `name_es`,`es`.`description` AS `description_es` from ((`allergen` `a` join `allergen_en` `en` on((`a`.`id` = `en`.`allergen`))) join `allergen_es` `es` on((`a`.`id` = `es`.`allergen`)));
+
+DROP TABLE IF EXISTS `feces_all_languages`;
+CREATE ALGORITHM=UNDEFINED SQL SECURITY DEFINER VIEW `feces_all_languages` AS select `a`.`id` AS `id`,`en`.`name` AS `name_en`,`en`.`description` AS `description_en`,`es`.`name` AS `name_es`,`es`.`description` AS `description_es` from ((`feces` `a` join `feces_en` `en` on((`a`.`id` = `en`.`feces`))) join `feces_es` `es` on((`a`.`id` = `es`.`feces`)));
+
+DROP TABLE IF EXISTS `symptom_all_languages`;
+CREATE ALGORITHM=UNDEFINED SQL SECURITY DEFINER VIEW `symptom_all_languages` AS select `a`.`id` AS `id`,`en`.`name` AS `name_en`,`en`.`description` AS `description_en`,`es`.`name` AS `name_es`,`es`.`description` AS `description_es` from ((`symptom` `a` join `symptom_en` `en` on((`a`.`id` = `en`.`symptom`))) join `symptom_es` `es` on((`a`.`id` = `es`.`symptom`)));
+
 DROP TABLE IF EXISTS `v_all_entries`;
 CREATE ALGORITHM=UNDEFINED SQL SECURITY DEFINER VIEW `v_all_entries` AS select `query`.`user` AS `user`,`query`.`date` AS `date`,`query`.`time` AS `time`,`query`.`id` AS `id`,`query`.`table` AS `table`,`query`.`type_en` AS `type_en`,`query`.`type_es` AS `type_es`,`query`.`value_en` AS `value_en`,`query`.`value_es` AS `value_es` from (select `sy`.`id` AS `id`,`sy`.`user` AS `user`,`sy`.`value_en` AS `value_en`,`sy`.`value_es` AS `value_es`,cast(`sy`.`datetime` as date) AS `date`,cast(`sy`.`datetime` as time) AS `time`,'registered_symptom' AS `table`,'Symptom' AS `type_en`,'Sintoma' AS `type_es` from `v_user_symptoms` `sy` union select `sy`.`id` AS `id`,`sy`.`user` AS `user`,`sy`.`value_en` AS `value_en`,`sy`.`value_es` AS `value_es`,cast(`sy`.`datetime` as date) AS `date`,cast(`sy`.`datetime` as time) AS `time`,'registered_feces' AS `table`,'Feces' AS `type_en`,'Heces' AS `type_es` from `v_user_feces` `sy` union select `sy`.`id` AS `id`,`sy`.`user` AS `user`,`sy`.`value_en` AS `value_en`,`sy`.`value_es` AS `value_es`,cast(`sy`.`datetime` as date) AS `date`,cast(`sy`.`datetime` as time) AS `time`,'registered_meal' AS `table`,'Meal' AS `type_en`,'Comida' AS `type_es` from `v_user_meals` `sy` union select `sy`.`id` AS `id`,`sy`.`user` AS `user`,`sy`.`value` AS `value_en`,'' AS `value_es`,cast(`sy`.`datetime` as date) AS `date`,cast(`sy`.`datetime` as time) AS `time`,'registered_supplement' AS `table`,'Supplement' AS `type_en`,'Suplemento' AS `type_es` from `v_user_supplement` `sy`) `query` order by `query`.`date`,`query`.`time`;
 
@@ -223,4 +244,4 @@ CREATE ALGORITHM=UNDEFINED SQL SECURITY DEFINER VIEW `v_user_supplement` AS sele
 DROP TABLE IF EXISTS `v_user_symptoms`;
 CREATE ALGORITHM=UNDEFINED SQL SECURITY DEFINER VIEW `v_user_symptoms` AS select `u`.`id` AS `user`,`r_s`.`datetime` AS `datetime`,`r_s`.`id` AS `id`,`en`.`name` AS `value_en`,`es`.`name` AS `value_es` from ((((`user` `u` join `registered_symptom` `r_s` on((`r_s`.`user` = `u`.`id`))) join `symptom` `s` on((`s`.`id` = `r_s`.`symptom`))) join `symptom_en` `en` on((`s`.`id` = `en`.`symptom`))) join `symptom_es` `es` on((`s`.`id` = `es`.`symptom`)));
 
--- 2023-03-22 21:15:13
+-- 2023-03-22 21:26:06
