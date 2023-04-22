@@ -24,9 +24,12 @@ var tablesWithUser = map[string]bool {
     "registered_meal": true,
     "registered_supplement": true,
     "registered_symptom": true,
-    "v_user_symptoms": true,
-    "v_user_anything": true,
-    "v_all_entries": true,
+	"v_user_all_entries": true,
+	"v_user_anything": true,
+	"v_user_feces": true,
+	"v_user_meals": true,
+	"v_user_supplement": true,
+	"v_user_symptoms": true,
 }
 
 type Config struct {
