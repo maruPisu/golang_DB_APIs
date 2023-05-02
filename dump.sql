@@ -3,6 +3,7 @@
 SET NAMES utf8;
 SET time_zone = '+00:00';
 SET foreign_key_checks = 0;
+SET sql_mode = 'NO_AUTO_VALUE_ON_ZERO';
 
 DROP TABLE IF EXISTS `allergen`;
 CREATE TABLE `allergen` (
@@ -146,7 +147,10 @@ CREATE TABLE `registered_symptom` (
 DROP TABLE IF EXISTS `symptom`;
 CREATE TABLE `symptom` (
   `id` int NOT NULL AUTO_INCREMENT,
-  PRIMARY KEY (`id`)
+  `symptom_group` int NOT NULL DEFAULT '1',
+  PRIMARY KEY (`id`),
+  KEY `symptom_group` (`symptom_group`),
+  CONSTRAINT `symptom_ibfk_1` FOREIGN KEY (`symptom_group`) REFERENCES `symptom_group` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
 
 
@@ -167,6 +171,32 @@ CREATE TABLE `symptom_es` (
   `description` varchar(100) NOT NULL,
   KEY `symptom` (`symptom`),
   CONSTRAINT `symptom_es_ibfk_1` FOREIGN KEY (`symptom`) REFERENCES `symptom` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
+
+
+DROP TABLE IF EXISTS `symptom_group`;
+CREATE TABLE `symptom_group` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
+
+
+DROP TABLE IF EXISTS `symptom_group_en`;
+CREATE TABLE `symptom_group_en` (
+  `symptom_group` int NOT NULL,
+  `name` varchar(100) NOT NULL,
+  `description` varchar(100) NOT NULL,
+  KEY `symptom_group` (`symptom_group`),
+  CONSTRAINT `symptom_group_en_ibfk_1` FOREIGN KEY (`symptom_group`) REFERENCES `symptom_group` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
+
+
+DROP TABLE IF EXISTS `symptom_group_es`;
+CREATE TABLE `symptom_group_es` (
+  `symptom_group` int NOT NULL,
+  `name` varchar(100) NOT NULL,
+  `description` varchar(100) NOT NULL,
+  KEY `symptom_group` (`symptom_group`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
 
 
@@ -191,6 +221,10 @@ CREATE TABLE `v_all_languages_feces` (`id` int, `name_en` varchar(100), `descrip
 
 DROP VIEW IF EXISTS `v_all_languages_symptom`;
 CREATE TABLE `v_all_languages_symptom` (`id` int, `name_en` varchar(100), `description_en` varchar(100), `name_es` varchar(100), `description_es` varchar(100));
+
+
+DROP VIEW IF EXISTS `v_all_languages_symptom_group`;
+CREATE TABLE `v_all_languages_symptom_group` (`id` int, `name_en` varchar(100), `description_en` varchar(100), `name_es` varchar(100), `description_es` varchar(100));
 
 
 DROP VIEW IF EXISTS `v_user_all_entries`;
@@ -226,6 +260,9 @@ CREATE ALGORITHM=UNDEFINED SQL SECURITY DEFINER VIEW `v_all_languages_feces` AS 
 DROP TABLE IF EXISTS `v_all_languages_symptom`;
 CREATE ALGORITHM=UNDEFINED SQL SECURITY DEFINER VIEW `v_all_languages_symptom` AS select `a`.`id` AS `id`,`en`.`name` AS `name_en`,`en`.`description` AS `description_en`,`es`.`name` AS `name_es`,`es`.`description` AS `description_es` from ((`symptom` `a` join `symptom_en` `en` on((`a`.`id` = `en`.`symptom`))) join `symptom_es` `es` on((`a`.`id` = `es`.`symptom`)));
 
+DROP TABLE IF EXISTS `v_all_languages_symptom_group`;
+CREATE ALGORITHM=UNDEFINED SQL SECURITY DEFINER VIEW `v_all_languages_symptom_group` AS select `a`.`id` AS `id`,`en`.`name` AS `name_en`,`en`.`description` AS `description_en`,`es`.`name` AS `name_es`,`es`.`description` AS `description_es` from ((`symptom` `a` join `symptom_group_en` `en` on((`a`.`id` = `en`.`symptom_group`))) join `symptom_group_es` `es` on((`a`.`id` = `es`.`symptom_group`)));
+
 DROP TABLE IF EXISTS `v_user_all_entries`;
 CREATE ALGORITHM=UNDEFINED SQL SECURITY DEFINER VIEW `v_user_all_entries` AS select `query`.`user` AS `user`,`query`.`date` AS `date`,`query`.`time` AS `time`,`query`.`id` AS `id`,`query`.`table` AS `table`,`query`.`type_en` AS `type_en`,`query`.`type_es` AS `type_es`,`query`.`value_en` AS `value_en`,`query`.`value_es` AS `value_es` from (select `sy`.`id` AS `id`,`sy`.`user` AS `user`,`sy`.`value_en` AS `value_en`,`sy`.`value_es` AS `value_es`,cast(`sy`.`datetime` as date) AS `date`,cast(`sy`.`datetime` as time) AS `time`,'registered_symptom' AS `table`,'Symptom' AS `type_en`,'Sintoma' AS `type_es` from `v_user_symptoms` `sy` union select `sy`.`id` AS `id`,`sy`.`user` AS `user`,`sy`.`value_en` AS `value_en`,`sy`.`value_es` AS `value_es`,cast(`sy`.`datetime` as date) AS `date`,cast(`sy`.`datetime` as time) AS `time`,'registered_feces' AS `table`,'Feces' AS `type_en`,'Heces' AS `type_es` from `v_user_feces` `sy` union select `sy`.`id` AS `id`,`sy`.`user` AS `user`,`sy`.`value_en` AS `value_en`,`sy`.`value_es` AS `value_es`,cast(`sy`.`datetime` as date) AS `date`,cast(`sy`.`datetime` as time) AS `time`,'registered_meal' AS `table`,'Meal' AS `type_en`,'Comida' AS `type_es` from `v_user_meals` `sy` union select `sy`.`id` AS `id`,`sy`.`user` AS `user`,`sy`.`value` AS `value_en`,'' AS `value_es`,cast(`sy`.`datetime` as date) AS `date`,cast(`sy`.`datetime` as time) AS `time`,'registered_supplement' AS `table`,'Supplement' AS `type_en`,'Suplemento' AS `type_es` from `v_user_supplement` `sy`) `query` order by `query`.`date`,`query`.`time`;
 
@@ -244,4 +281,4 @@ CREATE ALGORITHM=UNDEFINED SQL SECURITY DEFINER VIEW `v_user_supplement` AS sele
 DROP TABLE IF EXISTS `v_user_symptoms`;
 CREATE ALGORITHM=UNDEFINED SQL SECURITY DEFINER VIEW `v_user_symptoms` AS select `u`.`id` AS `user`,`r_s`.`datetime` AS `datetime`,`r_s`.`id` AS `id`,`en`.`name` AS `value_en`,`es`.`name` AS `value_es` from ((((`user` `u` join `registered_symptom` `r_s` on((`r_s`.`user` = `u`.`id`))) join `symptom` `s` on((`s`.`id` = `r_s`.`symptom`))) join `symptom_en` `en` on((`s`.`id` = `en`.`symptom`))) join `symptom_es` `es` on((`s`.`id` = `es`.`symptom`)));
 
--- 2023-03-23 07:28:40
+-- 2023-05-02 19:50:33
