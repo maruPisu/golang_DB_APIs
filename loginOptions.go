@@ -9,7 +9,7 @@ import (
 )
 
 func readLoginTable(w http.ResponseWriter, login *Login, database *sql.DB){
-	query := "SELECT id, email, name, googleid FROM user WHERE email = '" +  login.Email + "'"
+	query := "SELECT id, email, name, password, googleid FROM user WHERE email = '" +  login.Email + "'"
 
 	rows, err := db.Query(query)
 	if err != nil {
@@ -24,7 +24,12 @@ func readLoginTable(w http.ResponseWriter, login *Login, database *sql.DB){
 	for rows.Next() {
 		fmt.Println("next")
 		var nGoogleId sql.NullString
-		err := rows.Scan(&login.Id, &login.Email, &login.Name, &nGoogleId)
+		err := rows.Scan(
+			&login.Id, 
+			&login.Email, 
+			&login.Name, 
+			&login.Password, 
+			&nGoogleId)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -42,7 +47,6 @@ func checkPassword(oldPassword string, newPassword string) bool{
 func normalLogin(w http.ResponseWriter, login *Login, database *sql.DB) {
 	password := login.Password
 	readLoginTable(w, login, database)
-	
 	if(!checkPassword(password, login.Password)){
 		login.Id = ""
 	}
